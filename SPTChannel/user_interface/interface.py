@@ -5,98 +5,187 @@ This is user interface? when user input data
 
 from tkinter import *
 import sys
+from tkinter.ttk import Style
+import sqlite3
+from model.modeling_process import modeling_with_method, modeling_without_method
+from channel.channel import checking_mistake
+import numpy as np
+import matplotlib.pyplot as plt
+
+def modeling(enter_message, mistake_of_channel, asked_with, asked_without, receiver, receiver2, conn):
 
 
-def modeling(enter_message, polynom, send_message, mistake_of_channel):
+    #conn.execute("DROP TABLE EXPERIMENTS;")
+
+    #conn.execute('''CREATE TABLE EXPERIMENTS
+    #   (ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    #   PROBABILITY1           REAL    NOT NULL,
+    #   ASKED1            INT     NOT NULL,
+    #   ASKED2            INT     NOT NULL);''')
+
+    message = int(enter_message.get('1.0', END))
+    mist = mistake_of_channel.get('1.0', END)
+
+
+    print('Mist', mist)
+    print("Message", message)
+
+    ask_without, receiv_val2 = modeling_without_method(message, mist)
+    ask_with, receiv_val1 = modeling_with_method(message, mist)
+
+    print('as_with', ask_with, 'rec1', receiv_val1)
+    print('as_without', ask_without, 'rec2', receiv_val2)
+
+    asked_with.set(ask_with)
+    asked_without.set(ask_without)
+    receiver.set(receiv_val1)
+    receiver2.set(receiv_val2)
+
+    insert = " INSERT INTO EXPERIMENTS (PROBABILITY1, ASKED1, ASKED2) VALUES (" + str(checking_mistake(mist)) +\
+        ", " + str(ask_with) + ", " + str(ask_without) + ");"
+    conn.execute(insert)
+
+
     print('click')
-    polynom.set(enter_message.get('1.0', END))
-    send_message.set('Send message')
-    print('Mistake', mistake_of_channel.get('1.0', END))
 
 
-def show_graphic():
+def show_graphic(conn):
+    select = "SELECT PROBABILITY1, ASKED1, ASKED2 FROM EXPERIMENTS;"
+    as2 = conn.execute(select)
+    probs = []
+    ask1 = []
+    ask2 = []
+    for x in as2:
+        print("with", x)
+        probs.append(x[0])
+        ask1.append(x[1])
+        ask2.append(x[2])
+
+    plt.xlabel( "X values" )
+    plt.ylabel( "Y values" )
+    plt.plot(ask1, probs, "r--", ask2, probs, ":b^")
+    plt.show()
+
     print('Show graphic')
 
-root = Tk()
-root.geometry('700x500')
-root['bg'] = 'gray'
 
-"""
-Frame #1. There are enter message of user, view choice polynomial,
-send message
-"""
-frame = Frame(root, width=100, height=50)
+class Example(Frame):
 
-label1 = Label(frame, text='My label')
-label1.pack()
-enter_message = Text(frame, height=1, width=10, fg='red', font='Arial 14')
-enter_message.pack()
+    def __init__(self, parent):
+        Frame.__init__(self, parent)
 
-polynomial = StringVar()
-label = Label(frame, textvariable=polynomial)
-label.pack()
+        self.parent = parent
 
-send_message = StringVar()
-send_message_label = Label(frame, textvariable=send_message)
-send_message_label.pack()
+        self.initUI()
 
-"""
-Frame #2. There are symbolic channel #1, channel #2, label for enter
-mistake of channel, button for modeling
-"""
-frame1 = Frame(root, width=100, height=50)
+    def initUI(self):
 
-channel1 = Label(frame1, text="CHANNEL #1")
-channel1.pack()
+        conn = sqlite3.connect('test.db')
+        conn1 = sqlite3.connect('test.db')
+        print("Opened database successfully")
 
-channel2 = Label(frame1, text="CHANNEL #2")
-channel2.pack()
+        self.parent.title("Двухканальная система передачи данных")
 
-mistake_label = Label(frame1, text='Вероятность ошибки в каналах\n Например: 10^-5')
-mistake_label.pack()
+        self.style = Style()
 
-enter_mistake_of_channel = Text(frame1, height=1, width=10, fg='black',
-                                font='Arial 14')
-enter_mistake_of_channel.pack()
+        #self.pack(fill=BOTH, expand=1)
+        self.style.configure("TButton", padding=(0, 5, 0, 5),
+            font='serif 10')
+        self.style.configure("TLabel", padding=(0, 5, 0, 5),
+            font='serif 10')
 
-modeling_button = Button(frame1, text='Modeling', width=5, height=2,
-                         bg='gray', fg='white', command=
-    (lambda: modeling(enter_message, polynomial, send_message, enter_mistake_of_channel)))
-modeling_button.pack()
+        self.columnconfigure(0, pad=3)
+        self.columnconfigure(1, pad=3)
+        self.columnconfigure(2, pad=3)
+        self.columnconfigure(3, pad=3)
+
+        self.rowconfigure(0, pad=3)
+        self.rowconfigure(1, pad=3)
+        self.rowconfigure(2, pad=3)
+        self.rowconfigure(3, pad=3)
+        self.rowconfigure(4, pad=3)
+        self.rowconfigure(5, pad=3)
+        self.rowconfigure(6, pad=3)
+        self.rowconfigure(7, pad=3)
+        self.rowconfigure(8, pad=3)
+        self.rowconfigure(9, pad=3)
+        self.rowconfigure(10, pad=3)
+
+        """
+            Column = 0
+        """
+        enter_send_message_label = Label(self, text='Значение посылки', width=30, height=1, font='Arial 12 bold')
+        enter_send_message_label.grid(row=0, column=0)
+
+        enter_message_text = Text(self, height=1, width=10, font='Arial 12')
+        enter_message_text.grid(row=1, column=0)
+
+        modelling_button = Button(self, text='Моделировать', bg='#7DC6FC', fg='black', width=15, height=1, command=
+    (lambda: modeling(enter_message_text, enter_probability, asked_with, asked_without, received_message, received_message1, conn)), font='Arial 12 bold')
+        modelling_button.grid(row=10, column=0)
+
+        """
+            Column = 1
+        """
+        probability_channel_label = Label(self, text='Вероятность ошибки в каналах\n Например: 10^-5', width=30, height=2, font='Arial 12 bold')
+        probability_channel_label.grid(row=0, column=1)
+
+        enter_probability = Text(self, height=1, width=10, font='Arial 12')
+        enter_probability.grid(row=1, column=1)
+
+        """
+            Column = 2
+        """
+        label1 = Label(self, text='Результаты без применения способа', font='Arial 12 bold')
+        label1.grid(row=0, column=2)
+
+        asked_without_label = Label(self, text='Количество переспросов', width=40, height=3, font='Arial 12')
+        asked_without_label.grid(row=1, column=2)
+
+        asked_without = StringVar()
+        asked_without_text = Label(self, textvariable=asked_without, font='Arial 12')
+        asked_without_text.grid(row=1, column=3)
+
+        received_mess_label = Label(self, text='Полученная посылка', width=40, height=3, font='Arial 12')
+        received_mess_label.grid(row=2, column=2)
+
+        received_message1 = StringVar()
+        received_message_text1 = Label(self, textvariable=received_message1, width=15, height=3, font='Arial 12')
+        received_message_text1.grid(row=2, column=3)
+
+        label2 = Label(self, text='Результаты с применением способа', font='Arial 12 bold')
+        label2.grid(row=3, column=2)
+
+        asked_with_label = Label(self, text='Количество переспросов', width=40, height=1, font='Arial 12')
+        asked_with_label.grid(row=4, column=2)
+
+        asked_with = StringVar()
+        asked_with_text = Label(self, textvariable=asked_with, font='Arial 12')
+        asked_with_text.grid(row=4, column=3)
+
+        received_mess_label = Label(self, text='Полученная посылка', width=40, height=3, font='Arial 12')
+        received_mess_label.grid(row=5, column=2)
+
+        received_message = StringVar()
+        received_message_text = Label(self, textvariable=received_message, width=15, height=3, font='Arial 12')
+        received_message_text.grid(row=5, column=3)
 
 
+        show_diagramm_button = Button(self, text='Показать график', bg='#7DC6FC', fg='black', width=15, height=1,
+                                      command=(lambda: show_graphic(conn)), font='Arial 12 bold')
+        show_diagramm_button.grid(row=10, column=2)
+
+        self.pack()
+
+def main():
+
+    root = Tk()
+    #root.geometry('700x500')
+    root['bg'] = '#D4FCF0'
+    root.configure(background='#D4FCF0')
+    app = Example(root)
+    root.mainloop()
 
 
-"""
-Frame #3. There are received_message_label, number_of_asked without
-my method, number_of_asked with my method.
-"""
-frame2 = Frame(root, width=100, height=50)
-
-received_message = StringVar()
-received_message_label = Label(frame2, textvariable=received_message, fg='blue')
-received_message_label.pack()
-
-number_asked_without = StringVar()
-number_asked_without_label = Label(frame2, textvariable=number_asked_without,
-                                   fg='green', width=20, height=1)
-number_asked_without_label.pack()
-
-number_asked_with = StringVar()
-number_asked_with_label = Label(frame2, textvariable=number_asked_with, fg='black')
-number_asked_with_label.pack()
-
-button2 = Button(frame2, text='Показать график зависимости', command=(lambda: show_graphic()))
-button2.pack()
-
-
-
-
-"""
-Pack frame
-"""
-frame.pack(side=LEFT, expand=YES)
-frame1.pack(side=LEFT, expand=YES)
-frame2.pack(side=LEFT, expand=YES)
-root.mainloop()
-
+if __name__ == '__main__':
+    main()

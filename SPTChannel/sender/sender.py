@@ -99,7 +99,7 @@ class Sender:
                     # Perform modulo 2 multiplication on each index of the divisor
                     msg[i + j] = (int(msg[i + j]) + int(div[j])) % 2
         # Output the last error-checking code portion of the message generated
-        #print('msg1111', msg)
+        print('msg1111', msg[-len(code):])
         return msg[-len(code):]
 
     """
