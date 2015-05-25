@@ -33,6 +33,7 @@ class Channel:
 
 
 def checking_mistake(mistake_of_channel):
+    print('ENTER MISTAKE', mistake_of_channel)
     int_num = Word(nums)
     pm_sign = Optional(Suppress("+") | Literal("-"))
     float_num = Combine(pm_sign + int_num + Optional('.' + int_num)
@@ -53,24 +54,24 @@ def checking_mistake(mistake_of_channel):
 
 def generate_mistake_to_package(packages, mistake):
     mistake = checking_mistake(mistake)
-    #print('error', 1 / mistake)
+    print('error', 1 // mistake)
     rand_max = len(packages)
 
     mistake_polynomial = []
 
-    if len(packages) <= 1 / mistake:
-        number_of_mistake = random.randint(0, 1 / mistake - 1)
-     #   print('number of mistake', number_of_mistake)
+    if len(packages) <= 1 // mistake:
+        number_of_mistake = random.randint(0, 1 // mistake)
+        print('number of mistake', number_of_mistake)
         for x in range(0, len(packages)):
             if x == number_of_mistake:
                 mistake_polynomial.append(1)
             else:
                 mistake_polynomial.append(0)
     else:
-        bits_for_mistake = 1 / mistake
-      #  print('bits', bits_for_mistake)
+        bits_for_mistake = 1 // mistake
+        print('bits', bits_for_mistake)
         count_mistake_of_package = len(packages) / bits_for_mistake
-       # print('count', count_mistake_of_package)
+        print('count', count_mistake_of_package)
         count = 0
         for x in range(0, len(packages)):
             mistake_polynomial.append(0)
@@ -93,10 +94,11 @@ def generate_mistake_to_package(packages, mistake):
 
 
 if __name__ == '__main__':
-    mis = '10^-1'
+    mis = '10^-2'
     s = Sender(1544)
     c = Channel(mis, s)
     packages = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0]
     print('rec0', c.get_package())
     print('rec1', c.get_package())
+    print('leng', len(c.packages))
 

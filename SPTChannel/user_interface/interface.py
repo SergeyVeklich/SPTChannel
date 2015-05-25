@@ -4,6 +4,7 @@ This is user interface? when user input data
 """
 
 from tkinter import *
+import tkinter
 import sys
 from tkinter.ttk import Style
 import sqlite3
@@ -11,6 +12,14 @@ from model.modeling_process import modeling_with_method, modeling_without_method
 from channel.channel import checking_mistake
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
+from pandas import date_range,Series,DataFrame,read_csv, qcut
+from pandas.tools.plotting import radviz,scatter_matrix,bootstrap_plot,parallel_coordinates
+from numpy.random import random
+from pylab import *
+import brewer2mpl
+from matplotlib import rcParams
+
 
 def modeling(enter_message, mistake_of_channel, asked_with, asked_without, receiver, receiver2, conn):
 
@@ -43,7 +52,11 @@ def modeling(enter_message, mistake_of_channel, asked_with, asked_without, recei
 
     insert = " INSERT INTO EXPERIMENTS (PROBABILITY1, ASKED1, ASKED2) VALUES (" + str(checking_mistake(mist)) +\
         ", " + str(ask_with) + ", " + str(ask_without) + ");"
+
     conn.execute(insert)
+
+
+
 
 
     print('click')
@@ -57,13 +70,23 @@ def show_graphic(conn):
     ask2 = []
     for x in as2:
         print("with", x)
-        probs.append(x[0])
-        ask1.append(x[1])
-        ask2.append(x[2])
+        probs.append(float(x[0]))
+        ask1.append(float(x[1]))
+        ask2.append(float(x[2]))
 
-    plt.xlabel( "X values" )
-    plt.ylabel( "Y values" )
-    plt.plot(ask1, probs, "r--", ask2, probs, ":b^")
+    locs = np.arange(1, len(ask1)+1)
+    width = 0.27
+    plt.bar(locs, ask1, width=width)
+    plt.bar(locs+width, ask2, width=width, color='red')
+
+
+    plt.xticks(locs)
+    #plt.show()
+    xlabel1 = 'Number of experiment'
+    ylabel1 = 'Number of asked'
+    plt.xlabel(xlabel1)
+    plt.ylabel(ylabel1)
+    #plt.plot(ask1, probs, "r--", ask2, probs, ":b^")
     plt.show()
 
     print('Show graphic')
@@ -81,7 +104,8 @@ class Example(Frame):
     def initUI(self):
 
         conn = sqlite3.connect('test.db')
-        conn1 = sqlite3.connect('test.db')
+
+        #conn1 = sqlite3.connect('test.db')
         print("Opened database successfully")
 
         self.parent.title("Двухканальная система передачи данных")
@@ -117,10 +141,10 @@ class Example(Frame):
         enter_send_message_label = Label(self, text='Значение посылки', width=30, height=1, font='Arial 12 bold')
         enter_send_message_label.grid(row=0, column=0)
 
-        enter_message_text = Text(self, height=1, width=10, font='Arial 12')
+        enter_message_text = tkinter.Text(self, height=1, width=10, font='Arial 12')
         enter_message_text.grid(row=1, column=0)
 
-        modelling_button = Button(self, text='Моделировать', bg='#7DC6FC', fg='black', width=15, height=1, command=
+        modelling_button = tkinter.Button(self, text='Моделировать', bg='#7DC6FC', fg='black', width=15, height=1, command=
     (lambda: modeling(enter_message_text, enter_probability, asked_with, asked_without, received_message, received_message1, conn)), font='Arial 12 bold')
         modelling_button.grid(row=10, column=0)
 
@@ -128,10 +152,10 @@ class Example(Frame):
             Column = 1
         """
         probability_channel_label = Label(self, text='Вероятность ошибки в каналах\n Например: 10^-5', width=30, height=2, font='Arial 12 bold')
-        probability_channel_label.grid(row=0, column=1)
+        probability_channel_label.grid(row=3, column=0)
 
-        enter_probability = Text(self, height=1, width=10, font='Arial 12')
-        enter_probability.grid(row=1, column=1)
+        enter_probability = tkinter.Text(self, height=1, width=10, font='Arial 12')
+        enter_probability.grid(row=4, column=0)
 
         """
             Column = 2
@@ -171,7 +195,7 @@ class Example(Frame):
         received_message_text.grid(row=5, column=3)
 
 
-        show_diagramm_button = Button(self, text='Показать график', bg='#7DC6FC', fg='black', width=15, height=1,
+        show_diagramm_button = tkinter.Button(self, text='Показать график', bg='#7DC6FC', fg='black', width=15, height=1,
                                       command=(lambda: show_graphic(conn)), font='Arial 12 bold')
         show_diagramm_button.grid(row=10, column=2)
 

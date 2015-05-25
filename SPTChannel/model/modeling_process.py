@@ -14,20 +14,28 @@ def modeling_without_method(message, mistake):
     r2 = Receiver(channel2.packages, s.gener_polynomial)
 
     count_asked = 0
-
-    while(not r1.checking_received() or not r2.checking_received()):
+    count = 0
+    while((not r1.checking_received() or not r2.checking_received()) or r2.polynom != r1.polynom):
         count_asked += 1
+        count += 1
         r1.set_package(channel1.get_package())
         r2.set_package(channel2.get_package())
-        if count_asked > 7:
+        if count > 7:
             phasing_channels(s, channel1, r1)
             phasing_channels(s, channel2, r2)
+            count = 0
 
     print('WITHOUT METHOD')
     print('count', count_asked)
-    print('recev_message1', r1.convert_to_int())
-    print('recev_message2', r2.convert_to_int())
-    return count_asked, r1.convert_to_int()
+    if r1.polynom == r2.polynom:
+        print('recev_message1', r1.convert_to_int())
+        print('recev_message2', r2.convert_to_int())
+        return count_asked, r1.convert_to_int()
+    else:
+
+        print('recev_message1', r1.convert_to_int())
+        print('recev_message2', r2.convert_to_int())
+        return count_asked, r1.convert_to_int()
 
 
 #check flag on package
@@ -46,12 +54,17 @@ def check_flag_on_package(chan, rec, flag):
 def phasing_channels(sen, chan, rec):
     result = 0
     flag = list(generate_mistake_to_package(list(chan.phasing_combinate), chan.mistake_of_channel))
-    while not check_flag_on_package(chan, rec, flag):
-        result += 1
-        if result > 100:
-            break
-        else:
-            return True
+    print('Phasing')
+    if check_flag_on_package(chan, rec, flag):
+        return True
+    else:
+        while not check_flag_on_package(chan, rec, flag):
+            print('while')
+            result += 1
+            if result > 100:
+                break
+            else:
+                return True
 
 
 def modeling_with_method(message, mistake):
@@ -64,8 +77,10 @@ def modeling_with_method(message, mistake):
 
     count_asked = 0
     count = 0
+
     if phasing_channels(s, channel1, r1) and phasing_channels(s, channel2, r2):
-        while(not r1.checking_received() or not r2.checking_received()):
+        print('It is phasing  ')
+        while((not r1.checking_received() or not r2.checking_received()) or r1.polynom != r2.polynom):
             m1 = int(len(r1.package) / 2)
             K1 = int(len(r2.package) - (len(r2.package) / 2))
        # print('-----m1--------', m1)
@@ -137,6 +152,6 @@ if __name__ == '__main__':
     #print("Table created successfully")
     mistake = '10^-2'
 
-
-    modeling_without_method(mistake)
-    modeling_with_method(mistake)
+    message = 123
+    modeling_without_method(message, mistake)
+    modeling_with_method(message, mistake)
